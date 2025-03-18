@@ -8,6 +8,10 @@ services:
     ports:
       - '3000:3000'
       - '5555:5555'
+    develop:
+      watch:
+        - path: src
+          action: rebuild
     volumes:
       - .:/home/node/app
     depends_on:
