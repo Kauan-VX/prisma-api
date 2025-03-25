@@ -3,7 +3,7 @@ import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({
-    description: 'Email do usuário',
+    description: 'Email do usuário a ser criado a conta',
   })
   @IsEmail()
   @IsNotEmpty()
