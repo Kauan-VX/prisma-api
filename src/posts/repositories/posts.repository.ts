@@ -1,10 +1,13 @@
-import { PrismaService } from 'src/prisma/prisma.service';
-import { PostEntity } from '../entities/post.entity';
-import { CreatePostDto } from '../dto/create-post.dto';
-import { UpdatePostDto } from '../dto/update-post.dto';
+import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreatePostDto } from '../dto/create-post.dto';
+import { UpdatePostDto } from '../dto/update-post.dto';
+import { PostEntity } from '../entities/post.entity';
+
+@Injectable()
 export class PostsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
@@ -22,6 +25,7 @@ export class PostsRepository {
     if (!user) {
       throw new NotFoundError('Author not found.');
     }
+
     const data: Prisma.PostCreateInput = {
       ...createPostDto,
       author: {
@@ -30,20 +34,25 @@ export class PostsRepository {
         },
       },
     };
+
     return this.prisma.post.create({
       data,
     });
   }
 
-  findAll(): Promise<PostEntity[]> {
+  async findAll(): Promise<PostEntity[]> {
     return this.prisma.post.findMany({
       include: {
-        author: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
   }
 
-  findOne(id: number): Promise<PostEntity> {
+  async findOne(id: number): Promise<PostEntity> {
     return this.prisma.post.findUnique({
       where: {
         id,
@@ -59,18 +68,17 @@ export class PostsRepository {
     });
   }
 
-  async update(id: number, updateUserDto: UpdatePostDto): Promise<PostEntity> {
-    const { authorEmail } = updateUserDto;
+  async update(id: number, updatePostDto: UpdatePostDto): Promise<PostEntity> {
+    const { authorEmail } = updatePostDto;
 
     if (!authorEmail) {
       return this.prisma.post.update({
-        data: updateUserDto,
-        where: {
-          id,
-        },
+        data: updatePostDto,
+        where: { id },
       });
     }
-    delete updateUserDto.authorEmail;
+
+    delete updatePostDto.authorEmail;
 
     const user = await this.prisma.user.findUnique({
       where: {
@@ -83,17 +91,16 @@ export class PostsRepository {
     }
 
     const data: Prisma.PostUpdateInput = {
-      ...updateUserDto,
+      ...updatePostDto,
       author: {
         connect: {
           email: authorEmail,
         },
       },
     };
+
     return this.prisma.post.update({
-      where: {
-        id,
-      },
+      where: { id },
       data,
       include: {
         author: {

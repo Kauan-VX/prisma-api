@@ -1,35 +1,38 @@
 import { Injectable } from '@nestjs/common';
+import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserEntity } from './entities/user.entity';
 import { UsersRepository } from './repositories/users.repository';
-import { UnauthorizedError } from 'src/common/errors/types/UnauthorizedError';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly repository: UsersRepository) {}
+
   create(createUserDto: CreateUserDto) {
-    return this.usersRepository.create(createUserDto);
+    return this.repository.create(createUserDto);
   }
 
   findAll() {
-    // throw new UnauthorizedError('Não autorizado.');
-    return this.usersRepository.findAll();
+    //throw new UnauthorizedError('Nao autorizado.');
+    return this.repository.findAll();
   }
 
-  async findOne(id: number) {
-    const user = await this.usersRepository.findOne(id);
+  async findOne(id: number): Promise<UserEntity> {
+    const user = await this.repository.findOne(id);
+
     if (!user) {
-      throw new UnauthorizedError('Usuário não encontrado.');
+      throw new NotFoundError('Usuario nao encontrado.');
     }
 
     return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
-    return this.usersRepository.update(id, updateUserDto);
+    return this.repository.update(id, updateUserDto);
   }
 
   remove(id: number) {
-    return this.usersRepository.remove(id);
+    return this.repository.remove(id);
   }
 }

@@ -22,8 +22,8 @@ export class UsersRepository {
     });
   }
 
-  findAll(): Promise<UserEntity[]> {
-    return this.prisma.user.findMany({
+  async findAll(): Promise<UserEntity[]> {
+    return await this.prisma.user.findMany({
       include: {
         posts: {
           select: {
@@ -35,7 +35,7 @@ export class UsersRepository {
     });
   }
 
-  findOne(id: number): Promise<UserEntity> {
+  async findOne(id: number): Promise<UserEntity> {
     return this.prisma.user.findUnique({
       where: {
         id,
@@ -56,6 +56,7 @@ export class UsersRepository {
       where: {
         id,
       },
+      data: updateUserDto,
       include: {
         posts: {
           select: {
@@ -64,7 +65,6 @@ export class UsersRepository {
           },
         },
       },
-      data: updateUserDto,
     });
   }
 
